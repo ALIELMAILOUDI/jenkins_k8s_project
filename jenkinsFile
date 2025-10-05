@@ -1,0 +1,70 @@
+pipeline {
+    agent any
+    environment {
+        KUBECONFIG_CREDENTIALS = 'minikube-kubeconfig' // Use the ID you set
+        SCANNER_HOME=tool 'sonar-scanner'
+    }
+    stages {
+        stage('Git Clone') {
+            steps {
+                git 'https://github.com/ALIELMAILOUDI/Spring--Mongo-Docker-K8s.git'
+            }
+        }
+        stage('Maven Clean Build') {
+            steps {
+                script {
+                    def mavenHome = tool name: "Maven-3.9.9", type: "maven"
+                    def mavenCMD = "${mavenHome}/bin/mvn"
+                    sh "${mavenCMD} clean package"
+                }
+            }
+        }
+        stage('Owasp Dependency Check+') {
+            steps {
+                dependencyCheck additionalArguments: ' --scan ./  --disableNodeAudit', odcInstallation: 'DC'
+                dependencyCheckPublisher pattern: '**/dependency-check-report.xml'
+            }
+        }
+        stage('SonarQube') {
+            steps {
+                withSonarQubeEnv('sonar'){
+                    sh ''' $SCANNER_HOME/bin/sonar-scanner -Dsonar.projectKey=SpringMongo \
+                    -Dsonar.projectName=SpringMongo \
+                    -Dsonar.java.binaries=target/classes '''
+                }
+            }
+        }
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    def imageName = "alielm2003/spring-boot-mongo:latest" // Replace with your desired image name
+                    sh "docker build -t ${imageName} ."
+                }
+            }
+        }
+        stage('Trivy Docker Scan') {
+            steps {
+                sh "trivy image alielm2003/spring-boot-mongo:latest"
+            }
+        }
+
+        stage('Docker Push') {
+            steps {
+                script {
+                    withCredentials([string(credentialsId: 'Docker_Hub_Credentials', variable: 'Docker_Hub_Credentials')]) {
+                        sh "docker login -u alielm2003 -p ${Docker_Hub_Credentials}"
+                    }
+                    sh "docker push alielm2003/spring-boot-mongo:latest"
+                }
+            }
+        }
+        stage('Deploy to Minikube') {
+            steps {
+                withKubeConfig(credentialsId: env.KUBECONFIG_CREDENTIALS) {
+                    sh 'kubectl apply -f springBootMongo.yml'
+                    // You might want to add steps to monitor the deployment status
+                }
+            }
+        }
+    }
+}
