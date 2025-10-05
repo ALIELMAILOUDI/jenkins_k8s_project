@@ -1,6 +1,6 @@
 # CI/CD Pipeline for Spring Boot + MongoDB Application using Jenkins, Docker, and Minikube
 
-## 🧩 Project Description
+## Project Description
 
 This project demonstrates the implementation of a **complete CI/CD pipeline** for a **Spring Boot and MongoDB** application using **Jenkins**, **Docker**, and **Kubernetes (Minikube)**.
 
@@ -10,15 +10,16 @@ This setup follows the **DevOps principles** of Continuous Integration (CI) and 
 
 ---
 
-## 🏗️ Architecture Overview
+## Architecture Overview
 
 The following diagram illustrates the architecture and workflow of the CI/CD pipeline:
 
-> 🖼️ *(Insert your architecture image here — for example `![Architecture](./architecture.png)`)*
+<img width="1168" height="651" alt="image" src="https://github.com/user-attachments/assets/f7002073-86b1-4b3c-83a1-f842483b1c74" />
+
 
 ---
 
-## ⚙️ Workflow Summary
+## Workflow Summary
 
 1. **Code Commit (GitHub)**  
    The source code of the Spring Boot + MongoDB application is hosted on GitHub.
